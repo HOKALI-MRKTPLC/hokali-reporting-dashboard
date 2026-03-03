@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Rubik } from "next/font/google";
+import Sidebar from "@/components/Sidebar";
 import "./globals.css";
 
 const rubik = Rubik({
@@ -9,7 +10,7 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: "Attendance Dashboard",
+  title: "HOKALI Reporting",
   description: "HOKALI Attendance Performance Dashboard",
 };
 
@@ -21,7 +22,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${rubik.variable} antialiased`}>
-        {children}
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <div className="flex-1 min-w-0">
+            {children}
+          </div>
+        </div>
       </body>
     </html>
   );

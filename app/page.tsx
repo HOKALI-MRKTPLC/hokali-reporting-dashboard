@@ -264,16 +264,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-xl font-bold tracking-tight">Attendance Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Monitor student attendance across schools &amp; activities
-          </p>
-        </div>
-      </header>
-
       {/* View Navigation */}
       {hasAny && (
         <div className="bg-muted border-b">
