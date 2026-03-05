@@ -1,12 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
-import * as XLSX from "xlsx";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, FileSpreadsheet, X, CheckCircle2 } from "lucide-react";
-import { parseExcelRows, AttendanceRecord } from "@/lib/dataService";
-import { parseWeeklyStats, WeeklyRecord } from "@/lib/weeklyService";
-import { parseDailyAttendance, DailyRecord } from "@/lib/dailyService";
+import { Upload, FileSpreadsheet, X, CheckCircle2, Loader2 } from "lucide-react";
+import type { AttendanceRecord } from "@/lib/dataService";
+import type { WeeklyRecord } from "@/lib/weeklyService";
+import type { DailyRecord } from "@/lib/dailyService";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface FileUploadProps {
   onAttendanceLoaded: (data: AttendanceRecord[]) => void;
@@ -18,116 +19,94 @@ interface ZoneState {
   fileName: string | null;
   error: string | null;
   dragging: boolean;
+  loading: boolean;
 }
 
 export default function FileUpload({ onAttendanceLoaded, onWeeklyLoaded, onDailyLoaded }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [attendanceState, setAttendanceState] = useState<ZoneState>({ fileName: null, error: null, dragging: false });
-  const [weeklyState, setWeeklyState] = useState<ZoneState>({ fileName: null, error: null, dragging: false });
-  const [dailyState, setDailyState] = useState<ZoneState>({ fileName: null, error: null, dragging: false });
+  const [attendanceState, setAttendanceState] = useState<ZoneState>({ fileName: null, error: null, dragging: false, loading: false });
+  const [weeklyState, setWeeklyState] = useState<ZoneState>({ fileName: null, error: null, dragging: false, loading: false });
+  const [dailyState, setDailyState] = useState<ZoneState>({ fileName: null, error: null, dragging: false, loading: false });
   const [draggingOver, setDraggingOver] = useState(false);
 
-  const processAttendance = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: "array", cellDates: true });
-        const allRows: Record<string, unknown>[] = [];
-        workbook.SheetNames.forEach((name) => {
-          const sheet = workbook.Sheets[name];
-          const rows = XLSX.utils.sheet_to_json(sheet, { raw: false }) as Record<string, unknown>[];
-          allRows.push(...rows);
-        });
-        const parsed = parseExcelRows(allRows);
-        if (parsed.length === 0) {
-          setAttendanceState((s) => ({ ...s, error: "No valid rows found. Check column headers." }));
-          return;
-        }
-        setAttendanceState({ fileName: file.name, error: null, dragging: false });
-        onAttendanceLoaded(parsed);
-      } catch {
-        setAttendanceState((s) => ({ ...s, error: "Failed to parse file." }));
+  const processAttendance = async (file: File) => {
+    setAttendanceState((s) => ({ ...s, loading: true, error: null }));
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch(`${API_URL}/api/upload/attendance`, { method: "POST", body: formData });
+      if (!res.ok) throw new Error();
+      const { records } = await res.json();
+      if (records.length === 0) {
+        setAttendanceState((s) => ({ ...s, loading: false, error: "No valid rows found. Check column headers." }));
+        return;
       }
-    };
-    reader.readAsArrayBuffer(file);
+      setAttendanceState({ fileName: file.name, error: null, dragging: false, loading: false });
+      onAttendanceLoaded(records);
+    } catch {
+      setAttendanceState((s) => ({ ...s, loading: false, error: "Failed to upload file." }));
+    }
   };
 
-  const processWeekly = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: "array", cellDates: true });
-        const records = workbook.SheetNames.flatMap((name) => {
-          const sheet = workbook.Sheets[name];
-          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" }) as unknown[][];
-          return parseWeeklyStats(rows);
-        });
-        if (records.length === 0) {
-          setWeeklyState((s) => ({ ...s, error: "No valid rows found. Check the weekly_stats format." }));
-          return;
-        }
-        setWeeklyState({ fileName: file.name, error: null, dragging: false });
-        onWeeklyLoaded(records);
-      } catch {
-        setWeeklyState((s) => ({ ...s, error: "Failed to parse file." }));
+  const processWeekly = async (file: File) => {
+    setWeeklyState((s) => ({ ...s, loading: true, error: null }));
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch(`${API_URL}/api/upload/weekly`, { method: "POST", body: formData });
+      if (!res.ok) throw new Error();
+      const { records } = await res.json();
+      if (records.length === 0) {
+        setWeeklyState((s) => ({ ...s, loading: false, error: "No valid rows found. Check the weekly_stats format." }));
+        return;
       }
-    };
-    reader.readAsArrayBuffer(file);
+      setWeeklyState({ fileName: file.name, error: null, dragging: false, loading: false });
+      onWeeklyLoaded(records);
+    } catch {
+      setWeeklyState((s) => ({ ...s, loading: false, error: "Failed to upload file." }));
+    }
   };
 
-  const processDaily = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: "array", cellDates: true });
-        const sheets = workbook.SheetNames.map((name) => {
-          const sheet = workbook.Sheets[name];
-          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" }) as unknown[][];
-          return { name, rows };
-        });
-        const records = parseDailyAttendance(sheets);
-        if (records.length === 0) {
-          setDailyState((s) => ({ ...s, error: "No valid student rows found. Check the daily_attendance format." }));
-          return;
-        }
-        setDailyState({ fileName: file.name, error: null, dragging: false });
-        onDailyLoaded(records);
-      } catch {
-        setDailyState((s) => ({ ...s, error: "Failed to parse file." }));
+  const processDaily = async (file: File) => {
+    setDailyState((s) => ({ ...s, loading: true, error: null }));
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch(`${API_URL}/api/upload/daily`, { method: "POST", body: formData });
+      if (!res.ok) throw new Error();
+      const { records } = await res.json();
+      if (records.length === 0) {
+        setDailyState((s) => ({ ...s, loading: false, error: "No valid student rows found. Check the daily_attendance format." }));
+        return;
       }
-    };
-    reader.readAsArrayBuffer(file);
+      setDailyState({ fileName: file.name, error: null, dragging: false, loading: false });
+      onDailyLoaded(records);
+    } catch {
+      setDailyState((s) => ({ ...s, loading: false, error: "Failed to upload file." }));
+    }
   };
 
-  const autoRoute = (file: File, forceZone?: "attendance" | "weekly" | "daily") => {
+  const autoRoute = (file: File) => {
     if (!file.name.match(/\.(xlsx|xls|csv)$/i)) return;
     const name = file.name.toLowerCase();
-    const zone =
-      forceZone ??
-      (name.includes("daily") ? "daily" : name.includes("weekly") ? "weekly" : "attendance");
-    if (zone === "daily") processDaily(file);
-    else if (zone === "weekly") processWeekly(file);
+    if (name.includes("daily")) processDaily(file);
+    else if (name.includes("weekly")) processWeekly(file);
     else processAttendance(file);
   };
 
-  const handleFiles = (files: File[]) => {
-    files.forEach((f) => autoRoute(f));
-  };
+  const handleFiles = (files: File[]) => files.forEach((f) => autoRoute(f));
 
   const clearAttendance = () => {
-    setAttendanceState({ fileName: null, error: null, dragging: false });
+    setAttendanceState({ fileName: null, error: null, dragging: false, loading: false });
     onAttendanceLoaded([]);
   };
   const clearWeekly = () => {
-    setWeeklyState({ fileName: null, error: null, dragging: false });
+    setWeeklyState({ fileName: null, error: null, dragging: false, loading: false });
     onWeeklyLoaded([]);
   };
   const clearDaily = () => {
-    setDailyState({ fileName: null, error: null, dragging: false });
+    setDailyState({ fileName: null, error: null, dragging: false, loading: false });
     onDailyLoaded([]);
   };
 
@@ -196,7 +175,9 @@ export default function FileUpload({ onAttendanceLoaded, onWeeklyLoaded, onDaily
               className={`flex items-center gap-2.5 rounded-md border px-3 py-2 text-sm transition-colors
                 ${state.fileName ? "border-primary/40 bg-primary/5" : "border-border bg-muted/30"}`}
             >
-              {state.fileName ? (
+              {state.loading ? (
+                <Loader2 className="h-4 w-4 text-muted-foreground shrink-0 animate-spin" />
+              ) : state.fileName ? (
                 <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
               ) : (
                 <FileSpreadsheet className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -206,7 +187,7 @@ export default function FileUpload({ onAttendanceLoaded, onWeeklyLoaded, onDaily
                   {label}
                 </p>
                 <p className="text-xs text-muted-foreground truncate leading-tight">
-                  {state.fileName ?? hint}
+                  {state.loading ? "Uploading..." : state.fileName ?? hint}
                 </p>
                 {state.error && (
                   <p className="text-xs text-destructive leading-tight">{state.error}</p>
