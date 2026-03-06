@@ -59,7 +59,7 @@ export default function MultiSelect({ options, selected, onChange, placeholder }
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="h-9 min-w-40 rounded-md border border-input bg-background px-3 text-sm flex items-center justify-between gap-2"
+        className="h-9 min-w-40 rounded-md border border-input bg-card px-3 text-sm flex items-center justify-between gap-2"
       >
         <span className={selected.length === 0 ? "text-muted-foreground" : ""}>{label}</span>
         <svg className="h-4 w-4 opacity-50 shrink-0" viewBox="0 0 20 20" fill="currentColor">

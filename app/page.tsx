@@ -391,7 +391,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">Activity:</span>
-                <select value={wActivity} onChange={(e) => setWActivity(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+                <select value={wActivity} onChange={(e) => setWActivity(e.target.value)} className="h-9 rounded-md border border-input bg-card px-3 text-sm">
                   <option value="all">All</option>
                   {weeklyOptions.activities.map((a) => <option key={a} value={a}>{a}</option>)}
                 </select>
@@ -399,7 +399,7 @@ export default function DashboardPage() {
               {weeklyOptions.categories.length > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">Category:</span>
-                  <select value={wCategory} onChange={(e) => setWCategory(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+                  <select value={wCategory} onChange={(e) => setWCategory(e.target.value)} className="h-9 rounded-md border border-input bg-card px-3 text-sm">
                     <option value="all">All</option>
                     {weeklyOptions.categories.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -410,11 +410,11 @@ export default function DashboardPage() {
               {weekCount > 1 && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">Weeks:</span>
-                  <select value={wWeekFrom} onChange={(e) => { const v = Number(e.target.value); setWWeekFrom(v); if (wWeekTo !== null && wWeekTo < v) setWWeekTo(v); }} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+                  <select value={wWeekFrom} onChange={(e) => { const v = Number(e.target.value); setWWeekFrom(v); if (wWeekTo !== null && wWeekTo < v) setWWeekTo(v); }} className="h-9 rounded-md border border-input bg-card px-3 text-sm">
                     {weeklyOptions.weekLabels.map((label, i) => <option key={i} value={i}>{label}</option>)}
                   </select>
                   <span className="text-muted-foreground text-sm">to</span>
-                  <select value={weekToActual} onChange={(e) => setWWeekTo(Number(e.target.value))} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+                  <select value={weekToActual} onChange={(e) => setWWeekTo(Number(e.target.value))} className="h-9 rounded-md border border-input bg-card px-3 text-sm">
                     {weeklyOptions.weekLabels.map((label, i) => <option key={i} value={i} disabled={i < wWeekFrom}>{label}</option>)}
                   </select>
                 </div>
@@ -472,7 +472,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">Activity:</span>
-                <select value={dActivity} onChange={(e) => setDActivity(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+                <select value={dActivity} onChange={(e) => setDActivity(e.target.value)} className="h-9 rounded-md border border-input bg-card px-3 text-sm">
                   <option value="all">All</option>
                   {dailyOptions.activities.map((a) => <option key={a} value={a}>{a}</option>)}
                 </select>
@@ -480,7 +480,7 @@ export default function DashboardPage() {
               {dailyOptions.categories.length > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">Category:</span>
-                  <select value={dCategory} onChange={(e) => setDCategory(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+                  <select value={dCategory} onChange={(e) => setDCategory(e.target.value)} className="h-9 rounded-md border border-input bg-card px-3 text-sm">
                     <option value="all">All</option>
                     {dailyOptions.categories.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -495,7 +495,7 @@ export default function DashboardPage() {
                   <select
                     value={dDateFromActual}
                     onChange={(e) => { const v = Number(e.target.value); setDDateFromIdx(v); if (dDateToIdx !== null && dDateToIdx < v) setDDateToIdx(v); }}
-                    className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                    className="h-9 rounded-md border border-input bg-card px-3 text-sm"
                   >
                     {uniqueDates.map((d, i) => <option key={i} value={i}>{d}</option>)}
                   </select>
@@ -503,7 +503,7 @@ export default function DashboardPage() {
                   <select
                     value={dDateToActual}
                     onChange={(e) => setDDateToIdx(Number(e.target.value))}
-                    className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                    className="h-9 rounded-md border border-input bg-card px-3 text-sm"
                   >
                     {uniqueDates.map((d, i) => <option key={i} value={i} disabled={i < dDateFromActual}>{d}</option>)}
                   </select>

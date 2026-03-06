@@ -52,7 +52,7 @@
   --radius: 0.5rem;
 
   /* Background / Foreground — grey/000 & grey/700 */
-  --background: #f4f5f9;
+  --background: #f8f9fc;
   --foreground: #292d3b;
 
   /* Card — grey/000 & grey/700 */
@@ -83,8 +83,8 @@
   --destructive: #fb3f3f;
 
   /* Border & Input — subtle/02 = grey/300 */
-  --border: #d3d5e0;
-  --input: #d3d5e0;
+  --border: #f2f3f8;
+  --input: #f2f3f8;
 
   /* Ring — interactive/default = cyan/600 */
   --ring: #3e8ccc;
