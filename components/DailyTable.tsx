@@ -62,18 +62,6 @@ export default function DailyTable({
     });
   }, [data]);
 
-  // Build sessionId map: date label → sessionId (from first record that has it)
-  const sessionIdMap = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const r of data) {
-      r.dates.forEach((d, i) => {
-        if (!map.has(d) && r.sessionIds[i]) {
-          map.set(d, r.sessionIds[i]);
-        }
-      });
-    }
-    return map;
-  }, [data]);
 
   if (data.length === 0) {
     return (
@@ -159,29 +147,21 @@ export default function DailyTable({
                   In Range
                 </th>
                 {/* Date columns */}
-                {visibleDates.map((d, i) => {
-                  const sessionId = sessionIdMap.get(d) ?? "";
-                  return (
-                    <th
-                      key={i}
-                      className="px-1 py-2 text-xs font-semibold text-muted-foreground bg-accent text-center"
-                      style={{ minWidth: 44, maxWidth: 44 }}
-                      title={d}
-                    >
-                      <span className="block truncate text-[10px] leading-tight">
-                        {d.replace(/ \/ \w+$/, "")}
-                      </span>
-                      <span className="block truncate text-[9px] leading-tight text-muted-foreground/60">
-                        {d.match(/\/\s*(\w{3})(?:\s|$)/)?.[1] ?? ""}
-                      </span>
-                      {sessionId && (
-                        <span className="flex justify-center">
-                          <CopyCell value={sessionId} className="text-[9px]" />
-                        </span>
-                      )}
-                    </th>
-                  );
-                })}
+                {visibleDates.map((d, i) => (
+                  <th
+                    key={i}
+                    className="px-1 py-2 text-xs font-semibold text-muted-foreground bg-accent text-center"
+                    style={{ minWidth: 44, maxWidth: 44 }}
+                    title={d}
+                  >
+                    <span className="block truncate text-[10px] leading-tight">
+                      {d.replace(/ \/ \w+$/, "")}
+                    </span>
+                    <span className="block truncate text-[9px] leading-tight text-muted-foreground/60">
+                      {d.match(/\/\s*(\w{3})(?:\s|$)/)?.[1] ?? ""}
+                    </span>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>

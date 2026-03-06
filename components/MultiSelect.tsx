@@ -42,8 +42,9 @@ export default function MultiSelect({ options, selected, onChange, placeholder }
     }
   };
 
-  const filtered = search.trim()
-    ? options.filter((o) => o.toLowerCase().includes(search.toLowerCase()))
+  const terms = search.split(/[,\n]+/).map((t) => t.trim()).filter(Boolean);
+  const filtered = terms.length > 0
+    ? options.filter((o) => terms.some((t) => o.toLowerCase().includes(t.toLowerCase())))
     : options;
 
   const noun = placeholder.split(" ").slice(-1)[0];
@@ -96,6 +97,15 @@ export default function MultiSelect({ options, selected, onChange, placeholder }
                 className="w-full text-left px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
               >
                 Clear
+              </button>
+            )}
+            {search && filtered.length > 0 && (
+              <button
+                type="button"
+                onClick={() => onChange(Array.from(new Set([...selected, ...filtered])))}
+                className="w-full text-left px-2 py-1 text-xs text-primary hover:text-primary/80 font-medium"
+              >
+                Select all {filtered.length} visible
               </button>
             )}
             <div className="max-h-52 overflow-y-auto">

@@ -27,7 +27,7 @@ export default function CopyCell({ value, className }: CopyCellProps) {
         className={`font-mono truncate max-w-[90px] text-[11px] ${className ?? ""}`}
         title={value}
       >
-        {value}
+        {value.slice(-6)}
       </span>
       {copied ? (
         <Check className="h-3 w-3 text-green-500 shrink-0" />
