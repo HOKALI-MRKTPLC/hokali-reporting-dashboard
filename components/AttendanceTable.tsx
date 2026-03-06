@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import type { AttendanceRecord } from "@/lib/dataService";
+import CopyCell from "@/components/CopyCell";
 
 interface AttendanceTableProps {
   data: AttendanceRecord[];
@@ -128,6 +129,12 @@ export default function AttendanceTable({ data }: AttendanceTableProps) {
                   <TableHead className={thClass} onClick={() => handleSort("activity")}>
                     Activity <SortIcon sortConfig={sortConfig} colKey="activity" />
                   </TableHead>
+                  <TableHead className={thClass} style={{ width: 100 }} onClick={() => handleSort("bookingId")}>
+                    Booking ID <SortIcon sortConfig={sortConfig} colKey="bookingId" />
+                  </TableHead>
+                  <TableHead className={thClass} style={{ width: 72 }} onClick={() => handleSort("grade")}>
+                    Grade(s) <SortIcon sortConfig={sortConfig} colKey="grade" />
+                  </TableHead>
                   <TableHead className={thClass} onClick={() => handleSort("category")}>
                     Category <SortIcon sortConfig={sortConfig} colKey="category" />
                   </TableHead>
@@ -161,6 +168,8 @@ export default function AttendanceTable({ data }: AttendanceTableProps) {
                     <TableCell>{row.schoolName}</TableCell>
                     <TableCell className="text-muted-foreground">{row.county}</TableCell>
                     <TableCell className="text-muted-foreground">{row.activity}</TableCell>
+                    <TableCell style={{ width: 100 }}><CopyCell value={row.bookingId} /></TableCell>
+                    <TableCell className="text-muted-foreground" style={{ width: 72 }}>{row.grade || "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{row.category}</TableCell>
                     <TableCell className="text-muted-foreground">{row.type}</TableCell>
                     <TableCell className="text-center">

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { DailyRecord } from "@/lib/dailyService";
 import { getAttendanceForDate } from "@/lib/dailyService";
+import CopyCell from "@/components/CopyCell";
 
 interface DailyTableProps {
   data: DailyRecord[];
@@ -59,6 +60,19 @@ export default function DailyTable({
       r.dates.forEach((d, i) => map.set(d, r.attendance[i]));
       return map;
     });
+  }, [data]);
+
+  // Build sessionId map: date label → sessionId (from first record that has it)
+  const sessionIdMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of data) {
+      r.dates.forEach((d, i) => {
+        if (!map.has(d) && r.sessionIds[i]) {
+          map.set(d, r.sessionIds[i]);
+        }
+      });
+    }
+    return map;
   }, [data]);
 
   if (data.length === 0) {
@@ -134,6 +148,9 @@ export default function DailyTable({
                 <th className={`${thSticky} left-[280px] border-r`} style={{ minWidth: 120 }}>
                   Activity
                 </th>
+                <th className={`${thSticky} left-[400px] border-r`} style={{ minWidth: 80 }}>
+                  Booking ID
+                </th>
                 {/* Summary stat columns */}
                 <th className={`${thFixed}`} style={{ minWidth: 72 }}>
                   Overall
@@ -142,18 +159,29 @@ export default function DailyTable({
                   In Range
                 </th>
                 {/* Date columns */}
-                {visibleDates.map((d, i) => (
-                  <th
-                    key={i}
-                    className="px-1 py-2 text-xs font-semibold text-muted-foreground bg-accent text-center"
-                    style={{ minWidth: 44, maxWidth: 44 }}
-                    title={d}
-                  >
-                    <span className="block truncate text-[10px] leading-tight">
-                      {d.replace(/ \/ \w+$/, "")}
-                    </span>
-                  </th>
-                ))}
+                {visibleDates.map((d, i) => {
+                  const sessionId = sessionIdMap.get(d) ?? "";
+                  return (
+                    <th
+                      key={i}
+                      className="px-1 py-2 text-xs font-semibold text-muted-foreground bg-accent text-center"
+                      style={{ minWidth: 44, maxWidth: 44 }}
+                      title={d}
+                    >
+                      <span className="block truncate text-[10px] leading-tight">
+                        {d.replace(/ \/ \w+$/, "")}
+                      </span>
+                      <span className="block truncate text-[9px] leading-tight text-muted-foreground/60">
+                        {d.match(/\/\s*(\w{3})(?:\s|$)/)?.[1] ?? ""}
+                      </span>
+                      {sessionId && (
+                        <span className="flex justify-center">
+                          <CopyCell value={sessionId} className="text-[9px]" />
+                        </span>
+                      )}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
@@ -183,6 +211,12 @@ export default function DailyTable({
                       style={{ minWidth: 120 }}
                     >
                       {row.activity}
+                    </td>
+                    <td
+                      className="px-3 py-1.5 sticky left-[400px] bg-accent border-r"
+                      style={{ minWidth: 80 }}
+                    >
+                      <CopyCell value={row.bookingId} />
                     </td>
                     {/* Overall rate */}
                     <td className="px-2 py-1.5 text-right border-r" style={{ minWidth: 72 }}>

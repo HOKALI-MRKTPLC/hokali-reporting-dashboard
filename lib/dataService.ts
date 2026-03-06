@@ -7,6 +7,8 @@ export interface AttendanceRecord {
   schoolName: string;
   county: string;
   activity: string;
+  bookingId: string;
+  grade: string;
   category: string;
   type: string;
   enrolled: boolean;
@@ -92,16 +94,30 @@ export function getDistrictData(data: AttendanceRecord[]): AttendanceRecord[] {
 
 export function filterData(
   data: AttendanceRecord[],
-  schools: string[]
+  schools: string[],
+  grades: string[] = [],
+  bookingIds: string[] = []
 ): AttendanceRecord[] {
-  return data.filter((r) => schools.length === 0 || schools.includes(r.schoolName));
+  return data.filter((r) => {
+    if (schools.length > 0 && !schools.includes(r.schoolName)) return false;
+    if (grades.length > 0 && !grades.includes(r.grade)) return false;
+    if (bookingIds.length > 0 && !bookingIds.includes(r.bookingId)) return false;
+    return true;
+  });
 }
 
 export function filterByDistrict(
   data: AttendanceRecord[],
-  districts: string[]
+  districts: string[],
+  grades: string[] = [],
+  bookingIds: string[] = []
 ): AttendanceRecord[] {
-  return data.filter((r) => districts.length === 0 || districts.includes(r.district));
+  return data.filter((r) => {
+    if (districts.length > 0 && !districts.includes(r.district)) return false;
+    if (grades.length > 0 && !grades.includes(r.grade)) return false;
+    if (bookingIds.length > 0 && !bookingIds.includes(r.bookingId)) return false;
+    return true;
+  });
 }
 
 export function getSchoolSummaries(data: AttendanceRecord[]): SchoolSummary[] {
@@ -302,6 +318,8 @@ export function parseExcelRows(rows: Record<string, unknown>[]): AttendanceRecor
         schoolName: String(row["School Name"] ?? "Unknown School"),
         county: String(row["County"] ?? "").trim(),
         activity: String(row["Activity"] ?? ""),
+        bookingId: String(row["booking_id"] ?? "").trim(),
+        grade: String(row["Grade(s)"] ?? "").trim(),
         category: String(row["Category"] ?? "").trim(),
         type: String(row["Type"] ?? "").trim(),
         enrolled,

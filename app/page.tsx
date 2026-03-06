@@ -75,6 +75,10 @@ export default function DashboardPage() {
   // ── Attendance filters ───────────────────────────────────────────────────────
   const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
   const [selectedDistricts, setSelectedDistricts] = useState<string[]>([]);
+  const [selectedGrades1to1, setSelectedGrades1to1] = useState<string[]>([]);
+  const [selectedBookingIds1to1, setSelectedBookingIds1to1] = useState<string[]>([]);
+  const [selectedGradesDistricts, setSelectedGradesDistricts] = useState<string[]>([]);
+  const [selectedBookingIdsDistricts, setSelectedBookingIdsDistricts] = useState<string[]>([]);
 
   // ── Weekly filters ───────────────────────────────────────────────────────────
   const [wSubView, setWSubView] = useState<"1to1" | "districts">("1to1");
@@ -82,6 +86,8 @@ export default function DashboardPage() {
   const [wSchools, setWSchools] = useState<string[]>([]);
   const [wActivity, setWActivity] = useState("all");
   const [wCategory, setWCategory] = useState("all");
+  const [wGrades, setWGrades] = useState<string[]>([]);
+  const [wBookingIds, setWBookingIds] = useState<string[]>([]);
   const [wMetric, setWMetric] = useState<WeeklyMetric>("enrollment");
   const [wView, setWView] = useState<"table" | "chart">("table");
   const [wWeekFrom, setWWeekFrom] = useState(0);
@@ -93,6 +99,8 @@ export default function DashboardPage() {
   const [dActivity, setDActivity] = useState("all");
   const [dDistricts, setDDistricts] = useState<string[]>([]);
   const [dCategory, setDCategory] = useState("all");
+  const [dGrades, setDGrades] = useState<string[]>([]);
+  const [dBookingIds, setDBookingIds] = useState<string[]>([]);
   const [dView, setDView] = useState<"table" | "chart">("table");
   const [dDateFromIdx, setDDateFromIdx] = useState<number | null>(null); // null = auto last-20
   const [dDateToIdx, setDDateToIdx] = useState<number | null>(null);    // null = last
@@ -103,8 +111,31 @@ export default function DashboardPage() {
   const schools = useMemo(() => getSchools(data1to1), [data1to1]);
   const districts = useMemo(() => getDistricts(dataDistricts), [dataDistricts]);
 
-  const filtered1to1 = useMemo(() => filterData(data1to1, selectedSchools), [data1to1, selectedSchools]);
-  const filteredDistricts = useMemo(() => filterByDistrict(dataDistricts, selectedDistricts), [dataDistricts, selectedDistricts]);
+  const grades1to1 = useMemo(
+    () => Array.from(new Set(data1to1.map((r) => r.grade).filter(Boolean))).sort(),
+    [data1to1]
+  );
+  const bookingIds1to1 = useMemo(
+    () => Array.from(new Set(data1to1.map((r) => r.bookingId).filter(Boolean))).sort(),
+    [data1to1]
+  );
+  const gradesDistricts = useMemo(
+    () => Array.from(new Set(dataDistricts.map((r) => r.grade).filter(Boolean))).sort(),
+    [dataDistricts]
+  );
+  const bookingIdsDistricts = useMemo(
+    () => Array.from(new Set(dataDistricts.map((r) => r.bookingId).filter(Boolean))).sort(),
+    [dataDistricts]
+  );
+
+  const filtered1to1 = useMemo(
+    () => filterData(data1to1, selectedSchools, selectedGrades1to1, selectedBookingIds1to1),
+    [data1to1, selectedSchools, selectedGrades1to1, selectedBookingIds1to1]
+  );
+  const filteredDistricts = useMemo(
+    () => filterByDistrict(dataDistricts, selectedDistricts, selectedGradesDistricts, selectedBookingIdsDistricts),
+    [dataDistricts, selectedDistricts, selectedGradesDistricts, selectedBookingIdsDistricts]
+  );
 
   const metrics1to1 = useMemo(() => getMetrics(filtered1to1), [filtered1to1]);
   const metricsDistricts = useMemo(() => getMetrics(filteredDistricts), [filteredDistricts]);
@@ -133,8 +164,8 @@ export default function DashboardPage() {
   const weekToActual = wWeekTo !== null ? wWeekTo : Math.max(0, weekCount - 1);
 
   const filteredWeekly = useMemo(
-    () => filterWeekly(activeWeeklySet, wDistricts, wSchools, wActivity, wCategory),
-    [activeWeeklySet, wDistricts, wSchools, wActivity, wCategory],
+    () => filterWeekly(activeWeeklySet, wDistricts, wSchools, wActivity, wCategory, wGrades, wBookingIds),
+    [activeWeeklySet, wDistricts, wSchools, wActivity, wCategory, wGrades, wBookingIds],
   );
   const weeklyMetrics = useMemo(() => getWeeklyMetrics(filteredWeekly), [filteredWeekly]);
 
@@ -148,8 +179,8 @@ export default function DashboardPage() {
   const dailyOptions = useMemo(() => getDailyOptions(activeDailySet), [activeDailySet]);
 
   const filteredDaily = useMemo(
-    () => filterDaily(activeDailySet, dSchools, dActivity, dDistricts, dCategory),
-    [activeDailySet, dSchools, dActivity, dDistricts, dCategory],
+    () => filterDaily(activeDailySet, dSchools, dActivity, dDistricts, dCategory, dGrades, dBookingIds),
+    [activeDailySet, dSchools, dActivity, dDistricts, dCategory, dGrades, dBookingIds],
   );
 
   const uniqueDates = useMemo(() => getUniqueDates(filteredDaily), [filteredDaily]);
@@ -184,6 +215,10 @@ export default function DashboardPage() {
     setRawData(data);
     setSelectedSchools([]);
     setSelectedDistricts([]);
+    setSelectedGrades1to1([]);
+    setSelectedBookingIds1to1([]);
+    setSelectedGradesDistricts([]);
+    setSelectedBookingIdsDistricts([]);
   };
 
   const handleWeeklyLoaded = (records: WeeklyRecord[]) => {
@@ -193,6 +228,8 @@ export default function DashboardPage() {
     setWSchools([]);
     setWActivity("all");
     setWCategory("all");
+    setWGrades([]);
+    setWBookingIds([]);
     setWWeekFrom(0);
     setWWeekTo(null);
     if (records.length > 0) setView("weekly");
@@ -205,6 +242,8 @@ export default function DashboardPage() {
     setDActivity("all");
     setDDistricts([]);
     setDCategory("all");
+    setDGrades([]);
+    setDBookingIds([]);
     setDDateFromIdx(null);
     setDDateToIdx(null);
     if (records.length > 0) setView("daily");
@@ -214,17 +253,23 @@ export default function DashboardPage() {
     setOverallSubView(sv);
     setSelectedSchools([]);
     setSelectedDistricts([]);
+    setSelectedGrades1to1([]);
+    setSelectedBookingIds1to1([]);
+    setSelectedGradesDistricts([]);
+    setSelectedBookingIdsDistricts([]);
   };
 
   const switchWSubView = (sv: "1to1" | "districts") => {
     setWSubView(sv);
     setWDistricts([]); setWSchools([]); setWActivity("all"); setWCategory("all");
+    setWGrades([]); setWBookingIds([]);
     setWWeekFrom(0); setWWeekTo(null);
   };
 
   const switchDSubView = (sv: "1to1" | "districts") => {
     setDSubView(sv);
     setDSchools([]); setDActivity("all"); setDDistricts([]); setDCategory("all");
+    setDGrades([]); setDBookingIds([]);
     setDDateFromIdx(null); setDDateToIdx(null);
   };
 
@@ -313,7 +358,21 @@ export default function DashboardPage() {
             {safeOverallSubView === "1to1" && (
               <>
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                  <Filters schools={schools} selectedSchools={selectedSchools} onSchoolsChange={setSelectedSchools} />
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Filters schools={schools} selectedSchools={selectedSchools} onSchoolsChange={setSelectedSchools} />
+                    {grades1to1.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-muted-foreground">Grade(s):</span>
+                        <MultiSelect options={grades1to1} selected={selectedGrades1to1} onChange={setSelectedGrades1to1} placeholder="All Grades" />
+                      </div>
+                    )}
+                    {bookingIds1to1.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-muted-foreground">Booking ID:</span>
+                        <MultiSelect options={bookingIds1to1} selected={selectedBookingIds1to1} onChange={setSelectedBookingIds1to1} placeholder="All Booking IDs" />
+                      </div>
+                    )}
+                  </div>
                   <span className="text-xs text-muted-foreground">Showing {filtered1to1.length} of {data1to1.length} students</span>
                 </div>
                 <MetricCards {...metrics1to1} />
@@ -324,7 +383,7 @@ export default function DashboardPage() {
                 <CountyPieChart data={countySummaries} />
                 <AttendanceTable data={filtered1to1} />
                 <ZeroAttendanceTable data={filtered1to1} />
-                <LowEngagementTable data={schoolSummaries} />
+                <LowEngagementTable data={filtered1to1} />
               </>
             )}
 
@@ -332,14 +391,28 @@ export default function DashboardPage() {
             {safeOverallSubView === "districts" && (
               <>
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">District:</span>
-                    <MultiSelect
-                      options={districts}
-                      selected={selectedDistricts}
-                      onChange={setSelectedDistricts}
-                      placeholder="All Districts"
-                    />
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-muted-foreground">District:</span>
+                      <MultiSelect
+                        options={districts}
+                        selected={selectedDistricts}
+                        onChange={setSelectedDistricts}
+                        placeholder="All Districts"
+                      />
+                    </div>
+                    {gradesDistricts.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-muted-foreground">Grade(s):</span>
+                        <MultiSelect options={gradesDistricts} selected={selectedGradesDistricts} onChange={setSelectedGradesDistricts} placeholder="All Grades" />
+                      </div>
+                    )}
+                    {bookingIdsDistricts.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-muted-foreground">Booking ID:</span>
+                        <MultiSelect options={bookingIdsDistricts} selected={selectedBookingIdsDistricts} onChange={setSelectedBookingIdsDistricts} placeholder="All Booking IDs" />
+                      </div>
+                    )}
                   </div>
                   <span className="text-xs text-muted-foreground">Showing {filteredDistricts.length} of {dataDistricts.length} students</span>
                 </div>
@@ -352,7 +425,7 @@ export default function DashboardPage() {
                 <DistrictSummaryTable data={districtSummaries} />
                 <AttendanceTable data={filteredDistricts} />
                 <ZeroAttendanceTable data={filteredDistricts} />
-                <LowEngagementTable data={districtSchoolSummaries} />
+                <LowEngagementTable data={filteredDistricts} />
               </>
             )}
           </>
@@ -403,6 +476,18 @@ export default function DashboardPage() {
                     <option value="all">All</option>
                     {weeklyOptions.categories.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
+                </div>
+              )}
+              {weeklyOptions.grades.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">Grade(s):</span>
+                  <MultiSelect options={weeklyOptions.grades} selected={wGrades} onChange={setWGrades} placeholder="All Grades" />
+                </div>
+              )}
+              {weeklyOptions.bookingIds.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">Booking ID:</span>
+                  <MultiSelect options={weeklyOptions.bookingIds} selected={wBookingIds} onChange={setWBookingIds} placeholder="All Booking IDs" />
                 </div>
               )}
             </div>
@@ -484,6 +569,18 @@ export default function DashboardPage() {
                     <option value="all">All</option>
                     {dailyOptions.categories.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
+                </div>
+              )}
+              {dailyOptions.grades.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">Grade(s):</span>
+                  <MultiSelect options={dailyOptions.grades} selected={dGrades} onChange={setDGrades} placeholder="All Grades" />
+                </div>
+              )}
+              {dailyOptions.bookingIds.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">Booking ID:</span>
+                  <MultiSelect options={dailyOptions.bookingIds} selected={dBookingIds} onChange={setDBookingIds} placeholder="All Booking IDs" />
                 </div>
               )}
             </div>

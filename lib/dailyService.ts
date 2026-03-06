@@ -8,9 +8,12 @@ export interface DailyRecord {
   schoolName: string;
   county: string;
   activity: string;
+  bookingId: string;
+  grade: string;
   category: string;
   type: string;
   dates: string[];
+  sessionIds: string[];
   attendance: ("Yes" | "No" | "")[];
 }
 
@@ -47,11 +50,14 @@ function parseDailySheet(rows: unknown[][], sheetName: string): DailyRecord[] {
       continue;
     }
 
-    // Parse section header: "Activity  |  Category  |  Type  |  Schedule"
+    // Parse section header: "Activity | Category | Type | Schedule | BookingID | Grade(s): ..."
     const parts = String(row[0]).split("|").map((s) => s.trim());
     const activity = parts[0] ?? "";
     const category = parts[1] ?? "";
     const type = parts[2] ?? "";
+    const bookingId = parts[4] ?? "";
+    const gradeRaw = parts[5] ?? "";
+    const grade = gradeRaw.replace(/^Grade\(s\):\s*/i, "").trim();
 
     i++;
 
@@ -74,7 +80,22 @@ function parseDailySheet(rows: unknown[][], sheetName: string): DailyRecord[] {
 
     // Everything after "Type" column is a date column
     const dateStart = typeIdx + 1;
-    const dates = colRow.slice(dateStart).filter(Boolean);
+    const rawDateCols = colRow.slice(dateStart).filter(Boolean);
+    // Date headers may include session ID: "Sep 03 / Wed / SS-000756"
+    // Split into "Sep 03 / Wed" (date label) and "SS-000756" (session ID)
+    const dates: string[] = [];
+    const sessionIds: string[] = [];
+    for (const raw of rawDateCols) {
+      const slashParts = raw.split("/").map((s: string) => s.trim());
+      if (slashParts.length >= 3) {
+        // Last part is the session ID
+        sessionIds.push(slashParts[slashParts.length - 1]);
+        dates.push(slashParts.slice(0, slashParts.length - 1).join(" / "));
+      } else {
+        dates.push(raw);
+        sessionIds.push("");
+      }
+    }
 
     i++;
 
@@ -117,9 +138,12 @@ function parseDailySheet(rows: unknown[][], sheetName: string): DailyRecord[] {
         schoolName: sheetName,
         county: String(sRow[countyIdx] ?? "").trim(),
         activity,
+        bookingId,
+        grade,
         category,
         type,
         dates,
+        sessionIds,
         attendance,
       });
 
@@ -149,7 +173,13 @@ export function getDailyOptions(records: DailyRecord[]) {
   const categories = Array.from(
     new Set(records.map((r) => r.category).filter(Boolean))
   ).sort();
-  return { schools, activities, districts, categories };
+  const grades = Array.from(
+    new Set(records.map((r) => r.grade).filter(Boolean))
+  ).sort();
+  const bookingIds = Array.from(
+    new Set(records.map((r) => r.bookingId).filter(Boolean))
+  ).sort();
+  return { schools, activities, districts, categories, grades, bookingIds };
 }
 
 export function filterDaily(
@@ -157,13 +187,17 @@ export function filterDaily(
   schools: string[],
   activity: string,
   districts: string[],
-  category: string
+  category: string,
+  grades: string[] = [],
+  bookingIds: string[] = []
 ): DailyRecord[] {
   return records.filter((r) => {
     if (schools.length > 0 && !schools.includes(r.schoolName)) return false;
     if (activity !== "all" && r.activity !== activity) return false;
     if (districts.length > 0 && !districts.includes(r.district)) return false;
     if (category !== "all" && r.category !== category) return false;
+    if (grades.length > 0 && !grades.includes(r.grade)) return false;
+    if (bookingIds.length > 0 && !bookingIds.includes(r.bookingId)) return false;
     return true;
   });
 }

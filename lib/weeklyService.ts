@@ -13,6 +13,8 @@ export interface WeeklyRecord {
   schoolName: string;
   county: string;
   activity: string;
+  bookingId: string;
+  grade: string;
   category: string;
   type: string;
   maxCapacity: number;
@@ -25,13 +27,13 @@ export type WeeklyMetric = "enrollment" | "ada" | "attPct";
 
 // Parse raw 2D array from XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" })
 //
-// Row 0: [District, School Name, County, Activity, Category, Type, Max Capacity,
-//          Total Enrolled, Waitroom, "Jan 6 - Jan 10", "", "", "Jan 13 - Jan 17", "", "", ...]
+// Row 0: [District, School Name, County, Activity, Booking ID, Grade(s), Category, Type,
+//          Max Capacity, Total Enrolled, Waitroom, "Jan 6 - Jan 10", "", "", ...]
 // Row 1: [ignored fixed labels..., "Enrollment", "ADA", "Att%", "Enrollment", "ADA", "Att%", ...]
 // Row 2+: data
 //
-// Fixed columns 0-8, weeks start at column 9 (3 cols each: Enrollment, ADA, Att%)
-const WEEKS_START_COL = 9;
+// Fixed columns 0-10, weeks start at column 11 (3 cols each: Enrollment, ADA, Att%)
+const WEEKS_START_COL = 11;
 
 export function parseWeeklyStats(rows: unknown[][]): WeeklyRecord[] {
   if (rows.length < 3) return [];
@@ -68,11 +70,13 @@ export function parseWeeklyStats(rows: unknown[][]): WeeklyRecord[] {
     const schoolName = String(row[1] ?? "").trim();
     const county = String(row[2] ?? "").trim();
     const activity = String(row[3] ?? "").trim();
-    const category = String(row[4] ?? "").trim();
-    const type = String(row[5] ?? "").trim();
-    const maxCapacity = parseNum(row[6]);
-    const totalEnrolled = parseNum(row[7]);
-    const waitroom = parseNum(row[8]);
+    const bookingId = String(row[4] ?? "").trim();
+    const grade = String(row[5] ?? "").trim();
+    const category = String(row[6] ?? "").trim();
+    const type = String(row[7] ?? "").trim();
+    const maxCapacity = parseNum(row[8]);
+    const totalEnrolled = parseNum(row[9]);
+    const waitroom = parseNum(row[10]);
 
     if (!schoolName && !activity) continue;
 
@@ -86,7 +90,7 @@ export function parseWeeklyStats(rows: unknown[][]): WeeklyRecord[] {
       };
     });
 
-    records.push({ district, schoolName, county, activity, category, type, maxCapacity, totalEnrolled, waitroom, weeks });
+    records.push({ district, schoolName, county, activity, bookingId, grade, category, type, maxCapacity, totalEnrolled, waitroom, weeks });
   }
 
   return records;
@@ -97,8 +101,10 @@ export function getWeeklyOptions(records: WeeklyRecord[]) {
   const schools = Array.from(new Set(records.map((r) => r.schoolName).filter(Boolean))).sort();
   const activities = Array.from(new Set(records.map((r) => r.activity).filter(Boolean))).sort();
   const categories = Array.from(new Set(records.map((r) => r.category).filter(Boolean))).sort();
+  const grades = Array.from(new Set(records.map((r) => r.grade).filter(Boolean))).sort();
+  const bookingIds = Array.from(new Set(records.map((r) => r.bookingId).filter(Boolean))).sort();
   const weekLabels = records.length > 0 ? records[0].weeks.map((w) => w.weekLabel) : [];
-  return { districts, schools, activities, categories, weekLabels };
+  return { districts, schools, activities, categories, grades, bookingIds, weekLabels };
 }
 
 export function filterWeekly(
@@ -107,12 +113,16 @@ export function filterWeekly(
   schools: string[],
   activity: string,
   category: string,
+  grades: string[] = [],
+  bookingIds: string[] = [],
 ): WeeklyRecord[] {
   return records.filter((r) => {
     if (districts.length > 0 && !districts.includes(r.district)) return false;
     if (schools.length > 0 && !schools.includes(r.schoolName)) return false;
     if (activity !== "all" && r.activity !== activity) return false;
     if (category !== "all" && r.category !== category) return false;
+    if (grades.length > 0 && !grades.includes(r.grade)) return false;
+    if (bookingIds.length > 0 && !bookingIds.includes(r.bookingId)) return false;
     return true;
   });
 }

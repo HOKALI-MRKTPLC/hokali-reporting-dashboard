@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { WeeklyRecord, WeeklyMetric } from "@/lib/weeklyService";
 import { getMetricValue, isPercentMetric } from "@/lib/weeklyService";
+import CopyCell from "@/components/CopyCell";
 
 interface WeeklyTableProps {
   data: WeeklyRecord[];
@@ -103,9 +104,11 @@ export default function WeeklyTable({ data, metric, weekFrom, weekTo }: WeeklyTa
                 <th className={thFixed} style={{ minWidth: 90 }} onClick={() => handleSort("totalEnrolled")}>
                   Enrolled{sortArrow("totalEnrolled")}
                 </th>
-                <th className={`${thFixed} border-r-2`} style={{ minWidth: 90 }} onClick={() => handleSort("waitroom")}>
+                <th className={thFixed} style={{ minWidth: 90 }} onClick={() => handleSort("waitroom")}>
                   Waitroom{sortArrow("waitroom")}
                 </th>
+                <th className={thFixed} style={{ minWidth: 100 }}>Booking ID</th>
+                <th className={`${thFixed} border-r-2`} style={{ minWidth: 72 }}>Grade(s)</th>
                 {/* Weekly metric columns */}
                 {visibleWeeks.map((w, i) => (
                   <th
@@ -152,10 +155,16 @@ export default function WeeklyTable({ data, metric, weekFrom, weekTo }: WeeklyTa
                         {row.totalEnrolled || <span className="text-muted-foreground/50">—</span>}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-right border-r-2" style={{ minWidth: 90 }}>
+                    <td className="px-3 py-2 text-right border-r" style={{ minWidth: 90 }}>
                       <span className={row.waitroom > 0 ? "text-[#d97706] font-medium" : "text-muted-foreground/50"}>
                         {row.waitroom > 0 ? row.waitroom : "—"}
                       </span>
+                    </td>
+                    <td className="px-3 py-2 border-r" style={{ minWidth: 100 }}>
+                      <CopyCell value={row.bookingId} />
+                    </td>
+                    <td className="px-3 py-2 text-muted-foreground text-xs border-r-2" style={{ minWidth: 72 }}>
+                      {row.grade || "—"}
                     </td>
                     {/* Weekly metric cells */}
                     {row.weeks.slice(weekFrom, weekTo + 1).map((w, wi) => (
