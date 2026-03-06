@@ -270,21 +270,21 @@ export default function DashboardPage() {
         <div className="bg-card border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 pt-2">
             {hasAttendance && (
-              <button onClick={() => setView("overall")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "overall" ? "bg-background text-foreground border-border" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-background/50"}`}>
+              <button onClick={() => setView("overall")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "overall" ? "bg-accent text-primary border-primary/30" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-card/80"}`}>
                 Overall Stats
               </button>
             )}
             {hasWeekly && (
-              <button onClick={() => setView("weekly")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "weekly" ? "bg-background text-foreground border-border" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-background/50"}`}>
+              <button onClick={() => setView("weekly")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "weekly" ? "bg-accent text-primary border-primary/30" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-card/80"}`}>
                 Weekly Stats
               </button>
             )}
             {hasDaily && (
-              <button onClick={() => setView("daily")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "daily" ? "bg-background text-foreground border-border" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-background/50"}`}>
+              <button onClick={() => setView("daily")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "daily" ? "bg-accent text-primary border-primary/30" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-card/80"}`}>
                 Daily Stats
               </button>
             )}
-            <button onClick={() => setView("insights")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "insights" ? "bg-background text-foreground border-border" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-background/50"}`}>
+            <button onClick={() => setView("insights")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "insights" ? "bg-accent text-primary border-primary/30" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-card/80"}`}>
               Insights {insights.length > 0 && <span className="ml-1 inline-flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-bold">{insights.filter(i => i.severity === "critical").length}</span>}
             </button>
           </div>

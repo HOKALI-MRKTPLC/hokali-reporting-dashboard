@@ -74,8 +74,8 @@ export default function DayOfWeekTable({ data }: DayOfWeekTableProps) {
           <div className="overflow-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="border-b bg-muted">
-                  <th className="px-3 py-2 text-xs font-semibold text-muted-foreground text-left sticky left-0 bg-muted z-10 whitespace-nowrap" style={{ minWidth: 180 }}>
+                <tr className="border-b bg-accent">
+                  <th className="px-3 py-2 text-xs font-semibold text-muted-foreground text-left sticky left-0 bg-accent z-10 whitespace-nowrap" style={{ minWidth: 180 }}>
                     School
                   </th>
                   {DAY_ORDER.map((day) => (
@@ -93,8 +93,8 @@ export default function DayOfWeekTable({ data }: DayOfWeekTableProps) {
               </thead>
               <tbody>
                 {data.map((row, i) => (
-                  <tr key={i} className="border-b hover:bg-muted/30 transition-colors">
-                    <td className="px-3 py-2 font-medium sticky left-0 bg-background border-r" style={{ minWidth: 180 }}>
+                  <tr key={i} className="border-b hover:bg-accent/30 transition-colors">
+                    <td className="px-3 py-2 font-medium sticky left-0 bg-accent border-r" style={{ minWidth: 180 }}>
                       {row.school}
                     </td>
                     {DAY_ORDER.map((day) => {
@@ -142,8 +142,8 @@ export default function DayOfWeekTable({ data }: DayOfWeekTableProps) {
           <div className="overflow-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="border-b bg-muted">
-                  <th className="px-3 py-2 text-xs font-semibold text-muted-foreground text-left sticky left-0 bg-muted z-10 whitespace-nowrap" style={{ minWidth: 180 }}>
+                <tr className="border-b bg-accent">
+                  <th className="px-3 py-2 text-xs font-semibold text-muted-foreground text-left sticky left-0 bg-accent z-10 whitespace-nowrap" style={{ minWidth: 180 }}>
                     School
                   </th>
                   <th className="px-3 py-2 text-xs font-semibold text-muted-foreground text-center whitespace-nowrap">Best Day</th>
@@ -164,8 +164,8 @@ export default function DayOfWeekTable({ data }: DayOfWeekTableProps) {
                   const worstRate = row.worstDay ? row.days[row.worstDay].rate : null;
                   const gap = bestRate !== null && worstRate !== null ? bestRate - worstRate : null;
                   return (
-                    <tr key={i} className="border-b hover:bg-muted/30 transition-colors">
-                      <td className="px-3 py-2 font-medium sticky left-0 bg-background border-r" style={{ minWidth: 180 }}>
+                    <tr key={i} className="border-b hover:bg-accent/30 transition-colors">
+                      <td className="px-3 py-2 font-medium sticky left-0 bg-accent border-r" style={{ minWidth: 180 }}>
                         {row.school}
                       </td>
                       <td className="px-3 py-2 text-center">

@@ -30,7 +30,7 @@ function AttendanceCell({ value }: { value: "Yes" | "No" | "" }) {
     );
   return (
     <span
-      className="inline-block w-3 h-3 rounded-sm bg-muted-foreground/20"
+      className="inline-block w-3 h-3 rounded-sm bg-accent-foreground/20"
       title="Not enrolled yet"
     />
   );
@@ -97,9 +97,9 @@ export default function DailyTable({
   });
 
   const thSticky =
-    "px-3 py-2 text-xs font-semibold text-muted-foreground whitespace-nowrap sticky bg-muted z-10 text-left";
+    "px-3 py-2 text-xs font-semibold text-muted-foreground whitespace-nowrap sticky bg-accent z-10 text-left";
   const thFixed =
-    "px-3 py-2 text-xs font-semibold text-muted-foreground whitespace-nowrap text-right bg-muted border-r";
+    "px-3 py-2 text-xs font-semibold text-muted-foreground whitespace-nowrap text-right bg-accent border-r";
 
   return (
     <Card>
@@ -114,7 +114,7 @@ export default function DailyTable({
               <span className="inline-block w-3 h-3 rounded-sm bg-destructive" /> Absent
             </span>
             <span className="flex items-center gap-1">
-              <span className="inline-block w-3 h-3 rounded-sm bg-muted-foreground/20" /> Not enrolled
+              <span className="inline-block w-3 h-3 rounded-sm bg-accent-foreground/20" /> Not enrolled
             </span>
           </div>
         </div>
@@ -123,7 +123,7 @@ export default function DailyTable({
         <div className="overflow-auto max-h-[560px]">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="border-b bg-muted">
+              <tr className="border-b bg-accent">
                 {/* Sticky identity columns */}
                 <th className={`${thSticky} left-0 border-r`} style={{ minWidth: 140 }}>
                   Student
@@ -145,7 +145,7 @@ export default function DailyTable({
                 {visibleDates.map((d, i) => (
                   <th
                     key={i}
-                    className="px-1 py-2 text-xs font-semibold text-muted-foreground bg-muted text-center"
+                    className="px-1 py-2 text-xs font-semibold text-muted-foreground bg-accent text-center"
                     style={{ minWidth: 44, maxWidth: 44 }}
                     title={d}
                   >
@@ -164,22 +164,22 @@ export default function DailyTable({
                 return (
                   <tr
                     key={ri}
-                    className="border-b hover:bg-muted/30 transition-colors"
+                    className="border-b hover:bg-accent/30 transition-colors"
                   >
                     <td
-                      className="px-3 py-1.5 sticky left-0 bg-background border-r font-medium"
+                      className="px-3 py-1.5 sticky left-0 bg-accent border-r font-medium"
                       style={{ minWidth: 140 }}
                     >
                       {row.studentName}
                     </td>
                     <td
-                      className="px-3 py-1.5 sticky left-[140px] bg-background border-r text-muted-foreground text-xs"
+                      className="px-3 py-1.5 sticky left-[140px] bg-accent border-r text-muted-foreground text-xs"
                       style={{ minWidth: 140 }}
                     >
                       {row.schoolName}
                     </td>
                     <td
-                      className="px-3 py-1.5 sticky left-[280px] bg-background border-r text-muted-foreground text-xs"
+                      className="px-3 py-1.5 sticky left-[280px] bg-accent border-r text-muted-foreground text-xs"
                       style={{ minWidth: 120 }}
                     >
                       {row.activity}
