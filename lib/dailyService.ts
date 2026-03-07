@@ -86,14 +86,26 @@ function parseDailySheet(rows: unknown[][], sheetName: string): DailyRecord[] {
     const dates: string[] = [];
     const sessionIds: string[] = [];
     for (const raw of rawDateCols) {
-      const slashParts = raw.split("/").map((s: string) => s.trim());
-      if (slashParts.length >= 3) {
-        // Last part is the session ID
-        sessionIds.push(slashParts[slashParts.length - 1]);
-        dates.push(slashParts.slice(0, slashParts.length - 1).join(" / "));
+      if (raw.includes("/")) {
+        // Slash-separated: "Sep 03 / Wed / SS-000756"
+        const slashParts = raw.split("/").map((s: string) => s.trim());
+        if (slashParts.length >= 3) {
+          sessionIds.push(slashParts[slashParts.length - 1]);
+          dates.push(slashParts.slice(0, slashParts.length - 1).join(" / "));
+        } else {
+          dates.push(raw);
+          sessionIds.push("");
+        }
       } else {
-        dates.push(raw);
-        sessionIds.push("");
+        // Space-separated: "Feb 13 Fri SS-000135"
+        const m = raw.match(/^(.*?)\s+(SS-\d+)$/i);
+        if (m) {
+          dates.push(m[1].trim());
+          sessionIds.push(m[2]);
+        } else {
+          dates.push(raw);
+          sessionIds.push("");
+        }
       }
     }
 
@@ -261,10 +273,21 @@ function formatWeekLabel(weekKey: string): string {
   });
 }
 
+// Normalize a date label by stripping any trailing session ID.
+// Handles both formats:
+//   slash-separated: "Sep 03 / Wed / SS-000756" → "Sep 03 / Wed"
+//   space-separated: "Feb 13 Fri SS-000135"     → "Feb 13 Fri"
+function normalizeDateLabel(d: string): string {
+  if (d.includes("/")) {
+    return d.split("/").map((s) => s.trim()).slice(0, 2).join(" / ");
+  }
+  return d.replace(/\s+SS-\d+$/i, "").trim();
+}
+
 // Sorted unique dates across all filtered records
 export function getUniqueDates(records: DailyRecord[]): string[] {
   const set = new Set<string>();
-  records.forEach((r) => r.dates.forEach((d) => set.add(d)));
+  records.forEach((r) => r.dates.forEach((d) => set.add(normalizeDateLabel(d))));
   return Array.from(set).sort((a, b) => {
     const da = parseDateLabel(a);
     const db = parseDateLabel(b);
@@ -278,7 +301,8 @@ export function getAttendanceForDate(
   record: DailyRecord,
   date: string
 ): "Yes" | "No" | "" {
-  const idx = record.dates.indexOf(date);
+  const normalized = normalizeDateLabel(date);
+  const idx = record.dates.findIndex((d) => normalizeDateLabel(d) === normalized);
   if (idx === -1) return "";
   return record.attendance[idx];
 }

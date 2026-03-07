@@ -14,6 +14,16 @@ interface DailyTableProps {
   dateToIdx: number;
 }
 
+// Works for both slash-separated ("Sep 03 / Wed") and space-separated ("Feb 13 Fri")
+function parseDateParts(d: string): { date: string; day: string } {
+  if (d.includes("/")) {
+    const parts = d.split("/").map((s) => s.trim());
+    return { date: parts[0] ?? d, day: parts[1] ?? "" };
+  }
+  const m = d.match(/^(.+)\s+([A-Za-z]{3})$/);
+  return m ? { date: m[1].trim(), day: m[2] } : { date: d, day: "" };
+}
+
 function AttendanceCell({ value }: { value: "Yes" | "No" | "" }) {
   if (value === "Yes")
     return (
@@ -54,10 +64,18 @@ export default function DailyTable({
   const visibleDates = allDates.slice(dateFromIdx, dateToIdx + 1);
 
   // Precompute attendance map per record for fast lookup
+  // Keys are normalized to "Mon DD / Day" (strip any session ID) so lookups
+  // against uniqueDates (also normalized) always match.
   const attendanceMaps = useMemo(() => {
     return data.map((r) => {
       const map = new Map<string, "Yes" | "No" | "">();
-      r.dates.forEach((d, i) => map.set(d, r.attendance[i]));
+      r.dates.forEach((d, i) => {
+        // Normalize key to match what getUniqueDates produces
+        const key = d.includes("/")
+          ? d.split("/").map((s) => s.trim()).slice(0, 2).join(" / ")
+          : d.replace(/\s+SS-\d+$/i, "").trim();
+        map.set(key, r.attendance[i]);
+      });
       return map;
     });
   }, [data]);
@@ -154,12 +172,12 @@ export default function DailyTable({
                     style={{ minWidth: 44, maxWidth: 44 }}
                     title={d}
                   >
-                    <span className="block truncate text-[10px] leading-tight">
-                      {d.replace(/ \/ \w+$/, "")}
-                    </span>
-                    <span className="block truncate text-[9px] leading-tight text-muted-foreground/60">
-                      {d.match(/\/\s*(\w{3})(?:\s|$)/)?.[1] ?? ""}
-                    </span>
+                    {(() => { const { date, day } = parseDateParts(d); return (
+                      <>
+                        <span className="block truncate text-[10px] leading-tight">{date}</span>
+                        <span className="block truncate text-[9px] leading-tight text-muted-foreground/60">{day}</span>
+                      </>
+                    ); })()}
                   </th>
                 ))}
               </tr>
