@@ -80,36 +80,22 @@ function parseDailySheet(rows: unknown[][], sheetName: string): DailyRecord[] {
 
     // Everything after "Type" column is a date column
     const dateStart = typeIdx + 1;
-    const rawDateCols = colRow.slice(dateStart).filter(Boolean);
-    // Date headers may include session ID: "Sep 03 / Wed / SS-000756"
-    // Split into "Sep 03 / Wed" (date label) and "SS-000756" (session ID)
+    // Row 1 (dark blue): date + weekday headers, e.g. "Sep 03 / Wed"
+    const rawDateCols = colRow.slice(dateStart);
+    i++; // advance to session ID row (row 2)
+    if (i >= rows.length) break;
+    // Row 2 (lighter blue): session IDs only, e.g. "SS-000756"
+    const sessionIdRow = (rows[i] as unknown[]).map((c) => String(c ?? "").trim());
+    i++; // advance past session ID row to student data
+
     const dates: string[] = [];
     const sessionIds: string[] = [];
-    for (const raw of rawDateCols) {
-      if (raw.includes("/")) {
-        // Slash-separated: "Sep 03 / Wed / SS-000756"
-        const slashParts = raw.split("/").map((s: string) => s.trim());
-        if (slashParts.length >= 3) {
-          sessionIds.push(slashParts[slashParts.length - 1]);
-          dates.push(slashParts.slice(0, slashParts.length - 1).join(" / "));
-        } else {
-          dates.push(raw);
-          sessionIds.push("");
-        }
-      } else {
-        // Space-separated: "Feb 13 Fri SS-000135"
-        const m = raw.match(/^(.*?)\s+(SS-\d+)$/i);
-        if (m) {
-          dates.push(m[1].trim());
-          sessionIds.push(m[2]);
-        } else {
-          dates.push(raw);
-          sessionIds.push("");
-        }
-      }
+    for (let j = 0; j < rawDateCols.length; j++) {
+      const dateVal = String(rawDateCols[j] ?? "").trim();
+      if (!dateVal) continue;
+      dates.push(dateVal);
+      sessionIds.push(sessionIdRow[dateStart + j] ?? "");
     }
-
-    i++;
 
     // Parse student rows until 2 consecutive blank rows or a new section header
     while (i < rows.length) {
