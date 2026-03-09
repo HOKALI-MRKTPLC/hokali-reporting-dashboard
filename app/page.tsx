@@ -25,6 +25,7 @@ import DailyMetricCards from "@/components/DailyMetricCards";
 import DayOfWeekChart from "@/components/DayOfWeekChart";
 import DayOfWeekTable from "@/components/DayOfWeekTable";
 import InsightsTable from "@/components/InsightsTable";
+import SchoolRegistrationTable from "@/components/SchoolRegistrationTable";
 import { generateInsights } from "@/lib/insightsService";
 import {
   AttendanceRecord,
@@ -148,6 +149,19 @@ export default function DashboardPage() {
 
   const districtSummaries = useMemo(() => getDistrictSummaries(filteredDistricts), [filteredDistricts]);
   const districtSchoolSummaries = useMemo(() => getSchoolSummaries(filteredDistricts), [filteredDistricts]);
+
+  const schoolRegistration1to1 = useMemo(
+    () => schoolSummaries.map((s) => ({ school: s.school, totalStudents: s.totalStudents })),
+    [schoolSummaries]
+  );
+  const schoolRegistrationDistricts = useMemo(() => {
+    const schoolToDistrict = new Map(filteredDistricts.map((r) => [r.schoolName, r.district]));
+    return districtSchoolSummaries.map((s) => ({
+      school: s.school,
+      totalStudents: s.totalStudents,
+      district: schoolToDistrict.get(s.school) ?? "",
+    }));
+  }, [filteredDistricts, districtSchoolSummaries]);
   const activitySummariesDistricts = useMemo(() => getActivitySummaries(filteredDistricts), [filteredDistricts]);
   const categorySummariesDistricts = useMemo(() => getCategorySummaries(filteredDistricts), [filteredDistricts]);
   const typeSummariesDistricts = useMemo(() => getTypeSummaries(filteredDistricts), [filteredDistricts]);
@@ -376,6 +390,7 @@ export default function DashboardPage() {
                   <span className="text-xs text-muted-foreground">Showing {filtered1to1.length} of {data1to1.length} students</span>
                 </div>
                 <MetricCards {...metrics1to1} />
+                <SchoolRegistrationTable data={schoolRegistration1to1} />
                 <AttendanceChart schoolData={schoolSummaries} />
                 <ActivityChart data={activitySummaries1to1} />
                 <CategoryChart data={categorySummaries1to1} />
@@ -417,6 +432,7 @@ export default function DashboardPage() {
                   <span className="text-xs text-muted-foreground">Showing {filteredDistricts.length} of {dataDistricts.length} students</span>
                 </div>
                 <MetricCards {...metricsDistricts} />
+                <SchoolRegistrationTable data={schoolRegistrationDistricts} />
                 <DistrictChart data={districtSummaries} />
                 <DistrictSchoolChart data={districtSchoolSummaries} />
                 <ActivityChart data={activitySummariesDistricts} />
